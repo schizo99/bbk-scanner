@@ -1,0 +1,17 @@
+name: Build and push to dockerhub
+on:
+  - push
+jobs:
+  build-and-push:
+    name: Build web
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@master
+    - name: Build and push image
+      uses: docker/build-push-action@v1.0.1
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+        repository: schizo99/bbk-scan
+        tags: latest

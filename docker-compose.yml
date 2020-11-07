@@ -1,0 +1,24 @@
+version: '3'
+services:
+  influxdb:
+    image: influxdb:1.8.3
+    container_name: influxdb
+    volumes:
+      - /opt/.influx:/var/lib/influxdb
+    environment:
+      - TZ=Europe/Stockholm
+      - PGID=1000
+      - PUID=1000
+    ports:
+      - 8086:8086
+    user: "1000:1000"
+    restart: unless-stopped
+  bbk_scan:
+    depends_on:
+      - influxdb
+    image: bbk:latest
+    container_name: bbk_scan
+    environment:
+      - DATABASE=http://influxdb:8086
+      - CHAT_ID=11111111111
+      - TOKEN=xxxxxxx

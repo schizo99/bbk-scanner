@@ -98,7 +98,7 @@ func createDB(db, uri string) {
 
 func saveToDB(data bbk) {
 	client := influxdb2.NewClient(DATABASE, "my-token")
-	writeAPI := client.WriteAPIBlocking("bbk", "test")
+	writeAPI := client.WriteAPIBlocking("bbk", "bbk")
 	p := influxdb2.NewPoint("bbk",
 		map[string]string{"operator": data.Operator, "supportid": data.SupportID, "measurementid": data.MeasurementID},
 		map[string]interface{}{"upload": data.Upload, "download": data.Download, "latency": data.Latency},

@@ -28,6 +28,10 @@ type bbk struct {
 
 //DATABASE URL
 var DATABASE = os.Getenv("DATABASE")
+var interval = 15
+var alertTimer = 60 * 60
+var timeSinceAlert time.Time
+var duration = 10
 
 func scanner(data string) bbk {
 
@@ -69,7 +73,7 @@ func scanner(data string) bbk {
 
 func runBbk() []byte {
 	log.Println("-I- Running BBK Scan")
-	out, err := exec.Command("/app/bbk_cli").Output()
+	out, err := exec.Command("/app/bbk_cli", fmt.Sprintf("--duration=%d", duration)).Output()
 	if err != nil {
 		panic(err)
 	}
@@ -137,7 +141,16 @@ func verifyResult(data bbk) {
 		THRESHOLD = 250
 	}
 	if data.Download < THRESHOLD || data.Upload < THRESHOLD {
-		sendMessage(data)
+		log.Println("-W- Speed below threshold, reducing interval to every minute!")
+		if int(time.Now().Sub(timeSinceAlert).Minutes()) > alertTimer {
+			sendMessage(data)
+			timeSinceAlert = time.Now()
+		}
+		interval = 1
+		duration = 3
+	} else {
+		interval = 15
+		duration = 10
 	}
 }
 
@@ -153,7 +166,7 @@ func main() {
 		//result := bbk{Start: time.Now(), Download: 211.12, Upload: 211.12, Latency: 1.123, MeasurementID: "1234234", Operator: "Bahnhof AB", SupportID: "mmo2673t472634"}
 		verifyResult(result)
 		saveToDB(result)
-		log.Println("-I- Sleeping 15 minutes")
-		time.Sleep(15 * time.Minute)
+		log.Println(fmt.Sprintf("-I- Sleeping %d minutes", interval))
+		time.Sleep(time.Duration(interval) * time.Minute)
 	}
 }

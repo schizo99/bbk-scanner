@@ -32,6 +32,7 @@ var interval = 15
 var alertTimer = 60 * 60
 var timeSinceAlert time.Time
 var duration = 10
+var counter int
 
 func scanner(data string) bbk {
 
@@ -135,17 +136,24 @@ func sendMessage(data bbk) {
 }
 
 func verifyResult(data bbk) {
-	THRESHOLD, err := strconv.ParseFloat(os.Getenv("THRESHOLD"), 64)
+	UPLOAD_THRESHOLD, err := strconv.ParseFloat(os.Getenv("UPLOAD_THRESHOLD"), 64)
 	if err != nil {
-		log.Printf("-E- unable to parse THRESHOLD: %s", err)
-		THRESHOLD = 250
+		log.Printf("-E- unable to parse UPLOAD_THRESHOLD: %s", err)
+		UPLOAD_THRESHOLD = 100
 	}
-	if data.Download < THRESHOLD || data.Upload < THRESHOLD {
+	DOWNLOAD_THRESHOLD, err := strconv.ParseFloat(os.Getenv("DOWNLOAD_THRESHOLD"), 64)
+	if err != nil {
+		log.Printf("-E- unable to parse DOWNLOAD_THRESHOLD: %s", err)
+		DOWNLOAD_THRESHOLD = 250
+	}
+	if data.Download < DOWNLOAD_THRESHOLD || data.Upload < UPLOAD_THRESHOLD {
 		log.Println("-W- Speed below threshold, reducing interval to every minute!")
-		if int(time.Now().Sub(timeSinceAlert).Minutes()) > alertTimer {
+		if counter > 4 && int(time.Now().Sub(timeSinceAlert).Minutes()) > alertTimer {
 			sendMessage(data)
+			counter = 0
 			timeSinceAlert = time.Now()
 		}
+		counter++
 		interval = 1
 		duration = 3
 	} else {

@@ -22,3 +22,5 @@ services:
       - DATABASE=http://influxdb:8086
       - CHAT_ID=11111111111
       - TOKEN=xxxxxxx
+      - UPLOAD_THRESHOLD=100
+      - DOWNLOAD_THRESHOLD=250
